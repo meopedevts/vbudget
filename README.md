@@ -2,16 +2,17 @@
 
 > Personal finance manager with V, SQLite and SolidJS.
 
-A self-hosted, single-binary personal budget manager. The backend is written in [V](https://vlang.io) and embeds the frontend bundle at compile time — the result is one executable with zero runtime dependencies.
+A self-hosted, single-binary personal budget manager. The backend is written in [V](https://vlang.io) and embeds the
+frontend bundle at compile time — the result is one executable with zero runtime dependencies.
 
 ## Stack
 
-| Layer    | Technology                            |
-|----------|---------------------------------------|
-| Backend  | V · veb · SQLite (ORM)                |
-| Frontend | SolidJS · TailwindCSS · Kobalte       |
-| Build    | Vite (frontend) · V compiler (backend)|
-| Deploy   | Single binary or Docker               |
+| Layer    | Technology                             |
+|----------|----------------------------------------|
+| Backend  | V · veb · SQLite (ORM)                 |
+| Frontend | SolidJS · TailwindCSS · Kobalte        |
+| Build    | Vite (frontend) · V compiler (backend) |
+| Deploy   | Single binary or Docker                |
 
 ## Project structure
 
@@ -73,14 +74,14 @@ Open [http://localhost:8181/app](http://localhost:8181/app).
 
 ## Makefile targets
 
-| Target         | Description                                              |
-|----------------|----------------------------------------------------------|
-| `make front`   | Build the Vite bundle and copy it to `back/src/embedded` |
-| `make back`    | Compile the V binary (embeds the frontend bundle)        |
-| `make run`     | `front` → `back` → start the server                     |
-| `make all`     | `front` + `back` (no server start)                       |
-| `make clean`   | Remove `front/dist` and `back/src/embedded` artifacts    |
-| `make docker-build` | Build the production Docker image                   |
+| Target              | Description                                              |
+|---------------------|----------------------------------------------------------|
+| `make front`        | Build the Vite bundle and copy it to `back/src/embedded` |
+| `make back`         | Compile the V binary (embeds the frontend bundle)        |
+| `make run`          | `front` → `back` → start the server                      |
+| `make all`          | `front` + `back` (no server start)                       |
+| `make clean`        | Remove `front/dist` and `back/src/embedded` artifacts    |
+| `make docker-build` | Build the production Docker image                        |
 
 ## Footprint
 
@@ -88,35 +89,32 @@ Numbers measured on Linux x86-64 with the full MVP bundle embedded.
 
 ### Binary
 
-| Metric | Value |
-|---|---|
-| Binary size (backend + embedded frontend) | **5.6 MB** |
-| RSS — physical RAM in use at idle | **~17.7 MB** |
-| Virtual address space | ~157 MB ¹ |
+| Metric                                    | Value        |
+|-------------------------------------------|--------------|
+| Binary size (backend + embedded frontend) | **5.6 MB**   |
+| RSS — physical RAM in use at idle         | **~17.7 MB** |
+| Virtual address space                     | ~157 MB ¹    |
 
-> ¹ VmSize is the process address space, most of which is never backed by physical RAM. The number that matters for capacity planning is RSS.
+> ¹ VmSize is the process address space, most of which is never backed by physical RAM. The number that matters for
+> capacity planning is RSS.
 
 ### Frontend bundle
 
-| Asset | Raw | gzip | Reduction |
-|---|---|---|---|
-| `index.js` (SolidJS + all UI) | 405 KB | 115 KB | −71% |
-| `index.css` (Tailwind) | 68 KB | 11 KB | −84% |
-| **Total over the wire** | 473 KB | **126 KB** | −73% |
+| Asset                         | Raw    | gzip       | Reduction |
+|-------------------------------|--------|------------|-----------|
+| `index.js` (SolidJS + all UI) | 405 KB | 115 KB     | −71%      |
+| `index.css` (Tailwind)        | 68 KB  | 11 KB      | −84%      |
+| **Total over the wire**       | 473 KB | **126 KB** | −73%      |
 
-The JS and CSS are compressed with zlib at compile time via `$embed_file(..., .zlib)` and served directly from memory — no filesystem reads at runtime.
-
-### React comparison (for context)
-
-A comparable React app (CRA or Vite) with the same component count typically ships **~150–200 KB gzip** of JS alone — roughly 1.5–2× this entire SolidJS bundle including all UI primitives, routing, table, form and icons. React's virtual DOM and reconciler add weight that SolidJS avoids by compiling reactivity away at build time.
-
-
+The JS and CSS are compressed with zlib at compile time via `$embed_file(..., .zlib)` and served directly from memory —
+no filesystem reads at runtime.
 
 - **Transactions** — create, edit, delete income and expense entries with due date
 - **Settle flow** — mark pending transactions as paid with a confirmed payment date
 - **Overdue detection** — pending transactions past their due date are highlighted
 - **Categories** — color-coded categories filtered by income/expense type
-- **Dashboard** — real balance (paid only) + provisioned balance (including pending), summary cards and recent transactions table
+- **Dashboard** — real balance (paid only) + provisioned balance (including pending), summary cards and recent
+  transactions table
 - **Settings** — category management without leaving the main flow
 
 ## License
