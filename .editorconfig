@@ -1,0 +1,17 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+
+[*.{js,jsx,json,yml,ts,tsx,vue,svelte,html}]
+indent_style = space
+indent_size = 2
+max_line_length = 100
+quote_type = double
+
+[*.v]
+indent_size = 4
+indent_style = tab
+trim_trailing_whitespace = true
