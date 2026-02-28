@@ -1,0 +1,6 @@
+export * from './types'
+export * from './client'
+export { categoriesService } from './categories'
+export { transactionsService } from './transactions'
+export { integrationsService } from './integrations'
+export { notificationsService } from './notifications'
