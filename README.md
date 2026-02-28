@@ -82,7 +82,35 @@ Open [http://localhost:8181/app](http://localhost:8181/app).
 | `make clean`   | Remove `front/dist` and `back/src/embedded` artifacts    |
 | `make docker-build` | Build the production Docker image                   |
 
-## Features (MVP)
+## Footprint
+
+Numbers measured on Linux x86-64 with the full MVP bundle embedded.
+
+### Binary
+
+| Metric | Value |
+|---|---|
+| Binary size (backend + embedded frontend) | **5.6 MB** |
+| RSS — physical RAM in use at idle | **~17.7 MB** |
+| Virtual address space | ~157 MB ¹ |
+
+> ¹ VmSize is the process address space, most of which is never backed by physical RAM. The number that matters for capacity planning is RSS.
+
+### Frontend bundle
+
+| Asset | Raw | gzip | Reduction |
+|---|---|---|---|
+| `index.js` (SolidJS + all UI) | 405 KB | 115 KB | −71% |
+| `index.css` (Tailwind) | 68 KB | 11 KB | −84% |
+| **Total over the wire** | 473 KB | **126 KB** | −73% |
+
+The JS and CSS are compressed with zlib at compile time via `$embed_file(..., .zlib)` and served directly from memory — no filesystem reads at runtime.
+
+### React comparison (for context)
+
+A comparable React app (CRA or Vite) with the same component count typically ships **~150–200 KB gzip** of JS alone — roughly 1.5–2× this entire SolidJS bundle including all UI primitives, routing, table, form and icons. React's virtual DOM and reconciler add weight that SolidJS avoids by compiling reactivity away at build time.
+
+
 
 - **Transactions** — create, edit, delete income and expense entries with due date
 - **Settle flow** — mark pending transactions as paid with a confirmed payment date
