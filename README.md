@@ -67,10 +67,20 @@ The frontend bundle is embedded into the binary at compile time.
 
 ```bash
 make docker-build
-docker run -p 8181:8181 vbudget
+docker run -p 8181:8181 -v vbudget_data:/data vbudget
+```
+
+Or with the provided compose file:
+
+```bash
+docker compose up -d
 ```
 
 Open [http://localhost:8181/app](http://localhost:8181/app).
+
+The runtime image is **Alpine 3** (~5 MB base). The binary is compiled with `musl-gcc` producing a fully static executable — no libc dependency at runtime.
+
+The SQLite database is created at `/data/vbudget.db` inside the container. Mount a volume at `/data` to persist data across restarts (the compose file does this automatically via a named volume).
 
 ## Makefile targets
 

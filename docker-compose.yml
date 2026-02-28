@@ -1,0 +1,28 @@
+# docker-compose.yml — example deployment
+#
+# Runs vbudget with 0.5 vCPU and 50 MB RAM.
+# The SQLite database is persisted in a named volume at /data.
+#
+# Usage:
+#   docker compose up -d
+#   docker compose down          # stops without removing data
+#   docker compose down -v       # stops and removes the volume (deletes DB)
+
+services:
+  vbudget:
+    image: vbudget:latest
+    build: .
+    ports:
+      - "8181:8181"
+    volumes:
+      - vbudget_data:/data
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 50M
+
+volumes:
+  vbudget_data:
+

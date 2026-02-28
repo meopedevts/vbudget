@@ -24,18 +24,24 @@ COPY back/ ./
 # Copy the frontend bundle into the embedded directory before compiling
 COPY --from=frontend /app/front/dist ./src/embedded/
 
+# thevlang/vlang is Alpine-based — default gcc already links against musl libc,
+# so the binary runs natively on Alpine without any extra flags or packages.
 RUN v src/ -o bin/vbudget
 
 
-# ── Stage 3: Minimal runtime image ───────────────────────────────────────────
-FROM debian:bookworm-slim
+# ── Stage 3: Minimal Alpine runtime ──────────────────────────────────────────
+FROM alpine:3
 
-WORKDIR /app
+# sqlite-libs: V's db.sqlite module links dynamically against libsqlite3
+RUN apk add --no-cache sqlite-libs
 
-# Just the binary — frontend is baked in, no volumes or env vars needed
-COPY --from=backend /app/back/bin/vbudget ./vbudget
+# Binary lives in /app — never on a volume
+COPY --from=backend /app/back/bin/vbudget /app/vbudget
+
+# Database is created relative to the working directory.
+# Mount a volume at /data to persist vbudget.db across restarts.
+WORKDIR /data
 
 EXPOSE 8181
 
-CMD ["./vbudget"]
-
+CMD ["/app/vbudget"]
