@@ -1,4 +1,4 @@
-import {createEffect, createSignal, Show} from "solid-js"
+import {createEffect, createSignal, Index, Show} from "solid-js"
 import {createForm} from "@tanstack/solid-form"
 import {toast} from "somoto"
 import * as v from "valibot"
@@ -28,6 +28,22 @@ import {
   TextFieldInput,
   TextFieldLabel,
 } from "@/components/ui/text-field"
+import {
+  Calendar,
+  CalendarCell,
+  CalendarCellTrigger,
+  CalendarHeadCell,
+  CalendarLabel,
+  CalendarNav,
+  CalendarTable,
+} from "@/components/ui/calendar"
+import {
+  Popover,
+  PopoverContent,
+  PopoverPortal,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import {dateToISOLocal, formatDate, parseISODate, todayISODate} from "@/lib/format"
 import DeleteTransactionDialog from "@/components/transactions/delete-transaction-dialog"
 import type {
   Category,
@@ -41,12 +57,17 @@ import type {
 
 const kindLabel   = (k: string) => k === "income" ? "Receita" : "Despesa"
 const statusLabel = (s: string) => s === "paid" ? "Baixado" : "Pendente"
-const todayStr    = ()          => new Date().toISOString().slice(0, 10)
 
 // ── options ───────────────────────────────────────────────────────────────────
 
 const KIND_OPTIONS:   TransactionKind[]   = ["income", "expense"]
 const STATUS_OPTIONS: TransactionStatus[] = ["pending", "paid"]
+
+// ── date formatters ───────────────────────────────────────────────────────────
+
+const {format: formatWeekdayLong}  = new Intl.DateTimeFormat("pt-BR", {weekday: "long"})
+const {format: formatWeekdayShort} = new Intl.DateTimeFormat("pt-BR", {weekday: "short"})
+const {format: formatMonth}        = new Intl.DateTimeFormat("pt-BR", {month: "long"})
 
 // ── schema ────────────────────────────────────────────────────────────────────
 
@@ -96,7 +117,7 @@ const CreateEditTransactionDialog = (props: CreateEditTransactionDialogProps) =>
     kind:        props.transaction?.kind   ?? "expense",
     status:      props.transaction?.status ?? "pending",
     category_id: props.transaction ? String(props.transaction.category_id) : "",
-    due_date:    props.transaction?.due_date ?? todayStr(),
+    due_date:    props.transaction?.due_date ?? todayISODate(),
     paid_date:   props.transaction?.paid_date ?? "",
   })
 
@@ -209,15 +230,86 @@ const CreateEditTransactionDialog = (props: CreateEditTransactionDialogProps) =>
 
               <form.Field name="due_date">
                 {(field) => (
-                  <TextField
-                    validationState={vs(field)}
-                    name={field().name}
-                    value={field().state.value}
-                    onBlur={field().handleBlur}
-                    onChange={field().handleChange}
-                  >
+                  <TextField validationState={vs(field)}>
                     <TextFieldLabel>Vencimento</TextFieldLabel>
-                    <TextFieldInput type="date"/>
+                    <Calendar
+                      mode="single"
+                      value={field().state.value ? parseISODate(field().state.value) : undefined}
+                      onValueChange={(date) => {
+                        field().handleChange(date ? dateToISOLocal(date) : "")
+                        field().handleBlur()
+                      }}
+                    >
+                      {(calProps) => (
+                        <Popover>
+                          <PopoverTrigger<typeof Button>
+                            as={(triggerProps) => (
+                              <Button
+                                variant="outline"
+                                class="w-full justify-between font-normal"
+                                aria-invalid={
+                                  field().state.meta.isTouched && !field().state.meta.isValid
+                                    ? true
+                                    : undefined
+                                }
+                                {...triggerProps}
+                              >
+                                <Show when={field().state.value} fallback="Selecione uma data">
+                                  {formatDate(field().state.value)}
+                                </Show>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 24 24">
+                                  <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6"/>
+                                </svg>
+                              </Button>
+                            )}
+                          />
+                          <PopoverPortal>
+                            <PopoverContent class="w-auto overflow-hidden p-0">
+                              <div class="rounded-md p-3 shadow-sm">
+                                <div class="relative flex items-center justify-between mb-1">
+                                  <CalendarNav action="prev-month" aria-label="Mês anterior"/>
+                                  <CalendarLabel>
+                                    {formatMonth(calProps.months[0].month)}{" "}
+                                    {calProps.months[0].month.getFullYear()}
+                                  </CalendarLabel>
+                                  <CalendarNav action="next-month" aria-label="Próximo mês"/>
+                                </div>
+                                <CalendarTable>
+                                  <thead>
+                                    <tr class="flex">
+                                      <Index each={calProps.weekdays}>
+                                        {(weekday) => (
+                                          <CalendarHeadCell abbr={formatWeekdayLong(weekday())}>
+                                            {formatWeekdayShort(weekday())}
+                                          </CalendarHeadCell>
+                                        )}
+                                      </Index>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    <Index each={calProps.months[0].weeks}>
+                                      {(week) => (
+                                        <tr class="mt-2 flex w-full">
+                                          <Index each={week()}>
+                                            {(day) => (
+                                              <CalendarCell>
+                                                <CalendarCellTrigger day={day()} month={calProps.months[0].month}>
+                                                  {day().getDate()}
+                                                </CalendarCellTrigger>
+                                              </CalendarCell>
+                                            )}
+                                          </Index>
+                                        </tr>
+                                      )}
+                                    </Index>
+                                  </tbody>
+                                </CalendarTable>
+                              </div>
+                            </PopoverContent>
+                          </PopoverPortal>
+                        </Popover>
+                      )}
+                    </Calendar>
                     <TextFieldErrorMessage errors={field().state.meta.errors}/>
                   </TextField>
                 )}
@@ -316,7 +408,7 @@ const CreateEditTransactionDialog = (props: CreateEditTransactionDialogProps) =>
                           statusField().handleChange(v)
                           statusField().handleBlur()
                           // auto-fill paid_date with today when marking as paid
-                          form.setFieldValue("paid_date", v === "paid" ? todayStr() : "")
+                          form.setFieldValue("paid_date", v === "paid" ? todayISODate() : "")
                         }
                       }}
                       options={STATUS_OPTIONS}
@@ -337,14 +429,81 @@ const CreateEditTransactionDialog = (props: CreateEditTransactionDialogProps) =>
                   <Show when={statusField().state.value === "paid"}>
                     <form.Field name="paid_date">
                       {(field) => (
-                        <TextField
-                          name={field().name}
-                          value={field().state.value}
-                          onBlur={field().handleBlur}
-                          onChange={field().handleChange}
-                        >
+                        <TextField>
                           <TextFieldLabel>Data do Pagamento</TextFieldLabel>
-                          <TextFieldInput type="date"/>
+                          <Calendar
+                            mode="single"
+                            value={field().state.value ? parseISODate(field().state.value) : undefined}
+                            onValueChange={(date) => {
+                              field().handleChange(date ? dateToISOLocal(date) : "")
+                              field().handleBlur()
+                            }}
+                          >
+                            {(calProps) => (
+                              <Popover>
+                                <PopoverTrigger<typeof Button>
+                                  as={(triggerProps) => (
+                                    <Button
+                                      variant="outline"
+                                      class="w-full justify-between font-normal"
+                                      {...triggerProps}
+                                    >
+                                      <Show when={field().state.value} fallback="Selecione uma data">
+                                        {formatDate(field().state.value)}
+                                      </Show>
+                                      <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 24 24">
+                                        <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6"/>
+                                      </svg>
+                                    </Button>
+                                  )}
+                                />
+                                <PopoverPortal>
+                                  <PopoverContent class="w-auto overflow-hidden p-0">
+                                    <div class="rounded-md p-3 shadow-sm">
+                                      <div class="relative flex items-center justify-between mb-1">
+                                        <CalendarNav action="prev-month" aria-label="Mês anterior"/>
+                                        <CalendarLabel>
+                                          {formatMonth(calProps.months[0].month)}{" "}
+                                          {calProps.months[0].month.getFullYear()}
+                                        </CalendarLabel>
+                                        <CalendarNav action="next-month" aria-label="Próximo mês"/>
+                                      </div>
+                                      <CalendarTable>
+                                        <thead>
+                                          <tr class="flex">
+                                            <Index each={calProps.weekdays}>
+                                              {(weekday) => (
+                                                <CalendarHeadCell abbr={formatWeekdayLong(weekday())}>
+                                                  {formatWeekdayShort(weekday())}
+                                                </CalendarHeadCell>
+                                              )}
+                                            </Index>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          <Index each={calProps.months[0].weeks}>
+                                            {(week) => (
+                                              <tr class="mt-2 flex w-full">
+                                                <Index each={week()}>
+                                                  {(day) => (
+                                                    <CalendarCell>
+                                                      <CalendarCellTrigger day={day()} month={calProps.months[0].month}>
+                                                        {day().getDate()}
+                                                      </CalendarCellTrigger>
+                                                    </CalendarCell>
+                                                  )}
+                                                </Index>
+                                              </tr>
+                                            )}
+                                          </Index>
+                                        </tbody>
+                                      </CalendarTable>
+                                    </div>
+                                  </PopoverContent>
+                                </PopoverPortal>
+                              </Popover>
+                            )}
+                          </Calendar>
                         </TextField>
                       )}
                     </form.Field>
