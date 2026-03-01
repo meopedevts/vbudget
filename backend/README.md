@@ -13,7 +13,7 @@ V backend with veb, veb.auth and SQLite. Compiles to a single binary that embeds
 ## Project layout
 
 ```
-back/
+backend/
 ├── src/
 │   ├── main.v                      # Entry point
 │   ├── db/

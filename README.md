@@ -1,3 +1,9 @@
+| `make clean`        | Remove `front/dist` and `back/src/embedded` artifacts    |
+| `make front`        | Build the Vite bundle and copy it to `back/src/embedded` |
+cd front
+cd back
+- [`back/README.md`](back/README.md) — API, database schema, auth, migrations, project layout
+- [`front/README.md`](front/README.md) — pages, components, auth context, form patterns, API client
 # vbudget
 
 > Personal finance manager with V, SQLite and SolidJS.
@@ -13,15 +19,16 @@ frontend bundle at compile time — the result is one executable with zero runti
 | Frontend | SolidJS · TailwindCSS · Kobalte               |
 | Auth     | Cookie-based session tokens via `veb.auth`    |
 | Build    | Vite (frontend) · V compiler (backend)        |
-| Deploy   | Single binary or Docker                       |
-
+├── backend/       # V backend — HTTP server, SQLite, embedded SPA, auth
+├── frontend/      # SolidJS frontend — Vite, TailwindCSS, TanStack
 ## Project structure
 
 ```
 vbudget/
 ├── back/          # V backend — HTTP server, SQLite, embedded SPA, auth
 ├── front/         # SolidJS frontend — Vite, TailwindCSS, TanStack
-├── Makefile       # Build and run targets
+- [`backend/README.md`](backend/README.md) — API, database schema, auth, migrations, project layout
+- [`frontend/README.md`](frontend/README.md) — pages, components, auth context, form patterns, API client
 └── Dockerfile     # Multi-stage production image
 ```
 
@@ -35,14 +42,14 @@ See the detailed docs for each layer:
 ### Prerequisites
 
 - [V](https://vlang.io) (latest)
-- [Node.js](https://nodejs.org) + [pnpm](https://pnpm.io)
+cd backend
 
 ### Development
 
 Start the backend:
 
 ```bash
-cd back
+cd frontend
 v run src/
 ```
 
@@ -82,11 +89,11 @@ docker compose up -d
 Open [http://localhost:8181/app](http://localhost:8181/app).
 
 The runtime image is **Alpine 3** (~5 MB base). The binary is compiled with `musl-gcc` producing a fully static executable — no libc dependency at runtime.
-
+| `make front`        | Build the Vite bundle and copy it to `backend/src/embedded` |
 The SQLite database is created at `/data/vbudget.db` inside the container. Mount a volume at `/data` to persist data across restarts (the compose file does this automatically via a named volume).
 
 ## Makefile targets
-
+| `make clean`        | Remove `frontend/dist` and `backend/src/embedded` artifacts    |
 | Target              | Description                                              |
 |---------------------|----------------------------------------------------------|
 | `make front`        | Build the Vite bundle and copy it to `back/src/embedded` |

@@ -1,4 +1,5 @@
-FRONT_DIR    := front
+FRONT_DIR    := frontend
+BACK_DIR     := backend
 BACK_DIR     := back
 EMBEDDED_DIR := $(BACK_DIR)/src/embedded
 

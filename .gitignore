@@ -1,8 +1,8 @@
 # ── Artifacts ─────────────────────────────────────────────────────────────────
-front/dist/
-back/bin/vbudget
-back/src/embedded/assets/
-back/src/embedded/index.html
+frontend/dist/
+backend/bin/vbudget
+backend/src/embedded/assets/
+backend/src/embedded/index.html
 
 # ── Database ───────────────────────────────────────────────────────────────────
 *.db
@@ -12,8 +12,8 @@ back/src/embedded/index.html
 .env*.local
 
 # ── Dependencies ───────────────────────────────────────────────────────────────
-front/node_modules/
-back/modules/
+frontend/node_modules/
+backend/modules/
 
 # ── Editor & OS ────────────────────────────────────────────────────────────────
 .idea/
@@ -23,5 +23,5 @@ Thumbs.db
 *.iml
 
 # ── V language ─────────────────────────────────────────────────────────────────
-back/*.c
+backend/*.c
 
