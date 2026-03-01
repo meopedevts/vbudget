@@ -1,6 +1,6 @@
 import {createSignal, For} from "solid-js"
-import {Landmark, MessageCircle, RefreshCw, Plug, Unplug} from "lucide-solid"
-import {Card, CardContent, CardHeader, CardTitle, CardFooter} from "@/components/ui/card"
+import {Construction, Landmark, MessageCircle, Plug, RefreshCw, Unplug} from "lucide-solid"
+import {Card, CardContent, CardFooter, CardHeader, CardTitle} from "@/components/ui/card"
 import {Badge} from "@/components/ui/badge"
 import {Button} from "@/components/ui/button"
 import {Separator} from "@/components/ui/separator"
@@ -57,7 +57,8 @@ export default function Integrations() {
   const statusBadge = (status: ConnectionStatus) => {
     switch (status) {
       case "connected":
-        return <Badge variant="default" class="bg-emerald-600 hover:bg-emerald-600">Conectado</Badge>
+        return <Badge variant="default"
+                      class="bg-emerald-600 hover:bg-emerald-600">Conectado</Badge>
       case "disconnected":
         return <Badge variant="secondary">Desconectado</Badge>
       case "error":
@@ -78,62 +79,80 @@ export default function Integrations() {
 
   return (
     <div class="space-y-6">
-      <div>
-        <h1 class="text-2xl font-bold">Integrações</h1>
-        <p class="text-sm text-muted-foreground mt-1">
-          Gerencie suas conexões com serviços externos.
-        </p>
+      {/* WIP banner */}
+      <div
+        class="flex items-center gap-3 rounded-lg border border-amber-400 bg-amber-50 px-4 py-3 text-amber-800 dark:border-amber-500 dark:bg-amber-950/40 dark:text-amber-300">
+        <Construction class="size-5 shrink-0"/>
+        <div>
+          <p class="font-semibold text-sm">Em desenvolvimento</p>
+          <p class="text-xs opacity-80">
+            Esta página ainda não está implementada. Essa é apenas uma prévia do conteúdo final.
+          </p>
+        </div>
       </div>
 
-      <div class="grid gap-6 md:grid-cols-2">
-        <For each={integrations()}>
-          {(integration) => (
-            <Card>
-              <CardHeader>
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-3">
-                    <div class="flex size-10 items-center justify-center rounded-lg bg-muted">
-                      <integration.icon class="size-5" />
+      {/* Mockup (visual reference only — not functional) */}
+      <div class="pointer-events-none select-none opacity-40">
+
+        <div>
+          <h1 class="text-2xl font-bold">Integrações</h1>
+          <p class="text-sm text-muted-foreground mt-1">
+            Gerencie suas conexões com serviços externos.
+          </p>
+        </div>
+
+        <div class="grid gap-6 md:grid-cols-2">
+          <For each={integrations()}>
+            {(integration) => (
+              <Card>
+                <CardHeader>
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <div class="flex size-10 items-center justify-center rounded-lg bg-muted">
+                        <integration.icon class="size-5"/>
+                      </div>
+                      <div>
+                        <CardTitle class="text-base">{integration.label}</CardTitle>
+                      </div>
                     </div>
-                    <div>
-                      <CardTitle class="text-base">{integration.label}</CardTitle>
-                    </div>
+                    {statusBadge(integration.status)}
                   </div>
-                  {statusBadge(integration.status)}
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p class="text-sm text-muted-foreground">{integration.description}</p>
-                <Separator class="my-4" />
-                <div class="flex items-center gap-2 text-xs text-muted-foreground">
-                  <RefreshCw class="size-3" />
-                  <span>Último sync: {formatSyncDate(integration.lastSync)}</span>
-                </div>
-              </CardContent>
-              <CardFooter class="gap-2">
-                {integration.status === "connected" ? (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => toggleConnection(integration.id)}
-                  >
-                    <Unplug class="size-4" />
-                    Desconectar
-                  </Button>
-                ) : (
-                  <Button
-                    size="sm"
-                    onClick={() => toggleConnection(integration.id)}
-                  >
-                    <Plug class="size-4" />
-                    Conectar
-                  </Button>
-                )}
-              </CardFooter>
-            </Card>
-          )}
-        </For>
+                </CardHeader>
+                <CardContent>
+                  <p class="text-sm text-muted-foreground">{integration.description}</p>
+                  <Separator class="my-4"/>
+                  <div class="flex items-center gap-2 text-xs text-muted-foreground">
+                    <RefreshCw class="size-3"/>
+                    <span>Último sync: {formatSyncDate(integration.lastSync)}</span>
+                  </div>
+                </CardContent>
+                <CardFooter class="gap-2">
+                  {integration.status === "connected" ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => toggleConnection(integration.id)}
+                    >
+                      <Unplug class="size-4"/>
+                      Desconectar
+                    </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      onClick={() => toggleConnection(integration.id)}
+                    >
+                      <Plug class="size-4"/>
+                      Conectar
+                    </Button>
+                  )}
+                </CardFooter>
+              </Card>
+            )}
+          </For>
+        </div>
+
       </div>
+      {/* end mockup */}
     </div>
   )
 }
