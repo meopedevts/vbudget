@@ -3,7 +3,7 @@ module db
 import db.sqlite
 
 pub struct Database {
-mut:
+pub mut:
 	conn sqlite.DB
 }
 
@@ -29,6 +29,7 @@ fn (mut d Database) migrate() ! {
 	sql d.conn {
 		create table Category
 		create table Transaction
+		create table User
 	}!
 
 	// Category — new columns (idempotent: error ignored if column exists)

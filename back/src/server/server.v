@@ -1,15 +1,20 @@
 module server
 
 import veb
+import veb.auth
+import db.sqlite
 import src.db
 
 pub struct Context {
 	veb.Context
+pub mut:
+	current_user db.User
 }
 
 pub struct App {
 pub mut:
-	db &db.Database = unsafe { nil }
+	db   &db.Database = unsafe { nil }
+	auth auth.Auth[sqlite.DB]
 }
 
 pub struct Server {
@@ -22,6 +27,7 @@ pub fn new() &Server {
 	mut app := &App{
 		db: database
 	}
+	app.auth = auth.new(database.conn)
 	return &Server{
 		app: app
 	}

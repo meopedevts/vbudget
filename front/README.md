@@ -21,7 +21,7 @@ SolidJS SPA served under `/app`. In development, Vite proxies `/api/*` to the ba
 
 ```
 front/src/
-├── index.tsx                       # App entry — Router, routes, Toaster
+├── index.tsx                       # App entry — Router, routes (including /login), Toaster
 ├── styles/
 │   └── index.css                   # Tailwind base + CSS variables
 ├── lib/
@@ -29,18 +29,20 @@ front/src/
 │   │   ├── types.ts                # All shared TypeScript interfaces and types
 │   │   ├── client.ts               # Fetch wrapper with error handling
 │   │   ├── index.ts                # Barrel export
+│   │   ├── auth.ts                 # authService (login, register, logout, me)
 │   │   ├── categories.ts           # categoriesService
 │   │   ├── transactions.ts         # transactionsService
 │   │   ├── notifications.ts        # notificationsService
 │   │   └── integrations.ts         # integrationsService
+│   ├── auth-context.tsx            # AuthProvider + useAuth() hook
 │   ├── format.ts                   # formatCurrency, formatDate
 │   ├── cva.ts                      # cva + cx helpers
 │   ├── combine-style.ts
 │   ├── call-handler.ts
 │   └── use-mobile.ts
 ├── components/
-│   ├── layout.tsx                  # SidebarProvider + SidebarInset shell
-│   ├── app-sidebar.tsx             # Nav items + Settings footer link
+│   ├── layout.tsx                  # AuthProvider wrapper + SidebarProvider shell
+│   ├── app-sidebar.tsx             # Nav items, user info, logout button
 │   ├── ui/                         # Kobalte-based design system components
 │   ├── settings/
 │   │   └── categories-dialog.tsx   # Full categories CRUD in a dialog
@@ -52,6 +54,7 @@ front/src/
 │       ├── create-edit-alert-dialog.tsx
 │       └── delete-alert-dialog.tsx
 └── pages/
+    ├── login.tsx                   # Login / register page (public, no auth required)
     ├── dashboard.tsx               # Summary cards + recent transactions
     ├── transactions.tsx            # Full transactions table with actions
     ├── settings.tsx                # Settings page (categories group)
@@ -59,7 +62,51 @@ front/src/
     └── integrations.tsx            # Integrations scaffold
 ```
 
+## Authentication
+
+### Flow
+
+1. The Router defines `/login` **outside** the `Layout` component — no auth check on that route.
+2. `Layout` wraps all protected routes with `<AuthProvider>`.
+3. On mount, `AuthProvider` calls `GET /api/auth/me`. If the response is `401`, the user is redirected to `/login`.
+4. After a successful login or register, the server sets a `token` cookie and the SPA redirects to `/`.
+5. The logout button in the sidebar calls `POST /api/auth/logout`, which clears the cookie server-side and redirects the browser to `/login`.
+
+### Auth context
+
+```tsx
+import { useAuth } from "@/lib/auth-context"
+
+function MyComponent() {
+  const auth = useAuth()
+  // auth.user()      — User | undefined
+  // auth.isLoading() — boolean
+  // auth.logout()    — () => Promise<void>
+}
+```
+
+`AuthProvider` must be an ancestor of any component that calls `useAuth()`. The `Layout` component handles this automatically for all protected pages.
+
+### Login page (`/app/login`)
+
+The login page (`src/pages/login.tsx`) handles both **login** and **register** in a single toggled form. On submit it calls `authService.login()` or `authService.register()`, both of which return `{id, name}` and set the session cookie.
+
+### API service
+
+```ts
+import { authService } from "@/lib/api"
+
+await authService.login({ name, password })    // POST /api/auth/login
+await authService.register({ name, password }) // POST /api/auth/register
+await authService.logout()                     // POST /api/auth/logout
+await authService.me()                         // GET  /api/auth/me
+```
+
 ## Pages
+
+### Login (`/app/login`) — public
+
+Toggled login / register form. Redirects to `/` on success. Shows inline error messages for `400` and `401` responses.
 
 ### Dashboard (`/app`)
 

@@ -1,5 +1,5 @@
 import {A, useLocation} from "@solidjs/router"
-import {LayoutDashboard, ArrowLeftRight, Plug, Bell, Settings2} from "lucide-solid"
+import {LayoutDashboard, ArrowLeftRight, Plug, Bell, Settings2, LogOut, User} from "lucide-solid"
 import {
   Sidebar,
   SidebarContent,
@@ -12,6 +12,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
+import type {User as UserType} from "@/lib/api/types"
 
 const menuItems = [
   {title: "Dashboard", href: "/", icon: LayoutDashboard},
@@ -20,7 +21,12 @@ const menuItems = [
   {title: "Notificações", href: "/notifications", icon: Bell},
 ]
 
-export function AppSidebar() {
+interface AppSidebarProps {
+  user?: UserType
+  onLogout?: () => void
+}
+
+export function AppSidebar(props: AppSidebarProps) {
   const location = useLocation()
 
   const isActive = (href: string) => {
@@ -73,9 +79,28 @@ export function AppSidebar() {
               <span>Configurações</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
+
+          {/* Current user + logout */}
+          {props.user && (
+            <SidebarMenuItem>
+              <div class="flex w-full items-center justify-between gap-2 px-2 py-1.5">
+                <div class="flex items-center gap-2 text-sm">
+                  <User class="size-4 text-muted-foreground" />
+                  <span class="truncate font-medium">{props.user.name}</span>
+                </div>
+                <button
+                  type="button"
+                  title="Sair"
+                  class="rounded p-1 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                  onClick={props.onLogout}
+                >
+                  <LogOut class="size-4" />
+                </button>
+              </div>
+            </SidebarMenuItem>
+          )}
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
   )
 }
-

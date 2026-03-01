@@ -7,18 +7,19 @@ frontend bundle at compile time — the result is one executable with zero runti
 
 ## Stack
 
-| Layer    | Technology                             |
-|----------|----------------------------------------|
-| Backend  | V · veb · SQLite (ORM)                 |
-| Frontend | SolidJS · TailwindCSS · Kobalte        |
-| Build    | Vite (frontend) · V compiler (backend) |
-| Deploy   | Single binary or Docker                |
+| Layer    | Technology                                    |
+|----------|-----------------------------------------------|
+| Backend  | V · veb · veb.auth · SQLite (ORM)             |
+| Frontend | SolidJS · TailwindCSS · Kobalte               |
+| Auth     | Cookie-based session tokens via `veb.auth`    |
+| Build    | Vite (frontend) · V compiler (backend)        |
+| Deploy   | Single binary or Docker                       |
 
 ## Project structure
 
 ```
 vbudget/
-├── back/          # V backend — HTTP server, SQLite, embedded SPA
+├── back/          # V backend — HTTP server, SQLite, embedded SPA, auth
 ├── front/         # SolidJS frontend — Vite, TailwindCSS, TanStack
 ├── Makefile       # Build and run targets
 └── Dockerfile     # Multi-stage production image
@@ -26,8 +27,8 @@ vbudget/
 
 See the detailed docs for each layer:
 
-- [`back/README.md`](back/README.md) — API, database schema, migrations, project layout
-- [`front/README.md`](front/README.md) — pages, components, form patterns, API client
+- [`back/README.md`](back/README.md) — API, database schema, auth, migrations, project layout
+- [`front/README.md`](front/README.md) — pages, components, auth context, form patterns, API client
 
 ## Quick start
 
@@ -53,6 +54,8 @@ pnpm dev
 ```
 
 Open [http://localhost:3000/app](http://localhost:3000/app).
+
+On first run you will land on the **login page** (`/app/login`). Create an account with any username and password — the first user registered becomes your personal account.
 
 ### Production (single binary)
 
@@ -119,6 +122,9 @@ Numbers measured on Linux x86-64 with the full MVP bundle embedded.
 The JS and CSS are compressed with zlib at compile time via `$embed_file(..., .zlib)` and served directly from memory —
 no filesystem reads at runtime.
 
+## Features
+
+- **Authentication** — cookie-based session tokens; register/login page; protected API endpoints
 - **Transactions** — create, edit, delete income and expense entries with due date
 - **Settle flow** — mark pending transactions as paid with a confirmed payment date
 - **Overdue detection** — pending transactions past their due date are highlighted
@@ -126,6 +132,11 @@ no filesystem reads at runtime.
 - **Dashboard** — real balance (paid only) + provisioned balance (including pending), summary cards and recent
   transactions table
 - **Settings** — category management without leaving the main flow
+
+> ⚠️ **Security note** — `veb.auth` hashes passwords with SHA-256 + a random salt (single iteration). This is
+> sufficient for personal/self-hosted use but **not** recommended for public-facing production deployments. For stricter
+> security, replace the hashing step with bcrypt, Argon2 or PBKDF2 following the
+> [OWASP Password Storage Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html).
 
 ## License
 

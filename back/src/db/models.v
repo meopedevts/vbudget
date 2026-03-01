@@ -34,3 +34,17 @@ pub:
 	paid_date   string            // ISO date string, empty = not yet paid
 	created_at  time.Time
 }
+
+// ── Auth ──────────────────────────────────────────────────────────────────────
+// NOTE: password hashing uses sha256 with a single iteration via veb.auth.
+//       This is NOT secure for production. For production apps, use bcrypt,
+//       Argon2 or PBKDF2 following the OWASP Password Storage Cheat Sheet.
+
+@[table: 'users']
+pub struct User {
+pub:
+	id            int    @[primary; sql: serial]
+	name          string
+	password_hash string
+	salt          string
+}

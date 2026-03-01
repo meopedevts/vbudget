@@ -10,6 +10,7 @@ import Transactions from "@/pages/transactions";
 import Integrations from "@/pages/integrations";
 import Notifications from "@/pages/notifications";
 import Settings from "@/pages/settings";
+import LoginPage from "@/pages/login";
 
 const app = document.getElementById('app');
 
@@ -18,6 +19,10 @@ if (!app) {
 }
 
 const routes = [
+  {
+    path: "/login",
+    component: LoginPage,
+  },
   {
     path: "/",
     component: Layout,

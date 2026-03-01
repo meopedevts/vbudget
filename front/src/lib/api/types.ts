@@ -1,3 +1,20 @@
+// ── Auth ──────────────────────────────────────────────────────────────────────
+
+export interface User {
+  id:   number
+  name: string
+}
+
+export interface LoginPayload {
+  name:     string
+  password: string
+}
+
+export interface RegisterPayload {
+  name:     string
+  password: string
+}
+
 // ── Categories ────────────────────────────────────────────────────────────────
 
 export type CategoryKind = 'income' | 'expense'

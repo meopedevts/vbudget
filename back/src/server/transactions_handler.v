@@ -17,6 +17,7 @@ struct TransactionInput {
 // GET /api/transactions
 @['/api/transactions'; get]
 pub fn (mut app App) list_transactions(mut ctx Context) veb.Result {
+	app.get_auth_user(mut ctx) or { return ctx.unauthorized() }
 	rows := app.db.list_transactions() or { return ctx.server_error(err.msg()) }
 	return ctx.json(rows)
 }
@@ -24,6 +25,7 @@ pub fn (mut app App) list_transactions(mut ctx Context) veb.Result {
 // GET /api/transactions/:id
 @['/api/transactions/:id'; get]
 pub fn (mut app App) get_transaction(mut ctx Context, id int) veb.Result {
+	app.get_auth_user(mut ctx) or { return ctx.unauthorized() }
 	row := app.db.get_transaction(id) or { return ctx.not_found() }
 	return ctx.json(row)
 }
@@ -31,6 +33,7 @@ pub fn (mut app App) get_transaction(mut ctx Context, id int) veb.Result {
 // POST /api/transactions
 @['/api/transactions'; post]
 pub fn (mut app App) create_transaction(mut ctx Context) veb.Result {
+	app.get_auth_user(mut ctx) or { return ctx.unauthorized() }
 	input := json.decode(TransactionInput, ctx.req.data) or {
 		return ctx.request_error('invalid JSON body')
 	}
@@ -53,6 +56,7 @@ pub fn (mut app App) create_transaction(mut ctx Context) veb.Result {
 // PUT /api/transactions/:id
 @['/api/transactions/:id'; put]
 pub fn (mut app App) update_transaction(mut ctx Context, id int) veb.Result {
+	app.get_auth_user(mut ctx) or { return ctx.unauthorized() }
 	input := json.decode(TransactionInput, ctx.req.data) or {
 		return ctx.request_error('invalid JSON body')
 	}
@@ -75,6 +79,7 @@ pub fn (mut app App) update_transaction(mut ctx Context, id int) veb.Result {
 // DELETE /api/transactions/:id
 @['/api/transactions/:id'; delete]
 pub fn (mut app App) delete_transaction(mut ctx Context, id int) veb.Result {
+	app.get_auth_user(mut ctx) or { return ctx.unauthorized() }
 	app.db.delete_transaction(id) or { return ctx.not_found() }
 	return ctx.no_content()
 }

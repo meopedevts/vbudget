@@ -2,11 +2,14 @@ import type {ParentProps} from "solid-js"
 import {SidebarInset, SidebarProvider, SidebarTrigger} from "@/components/ui/sidebar"
 import {Separator} from "@/components/ui/separator"
 import {AppSidebar} from "@/components/app-sidebar"
+import {AuthProvider, useAuth} from "@/lib/auth-context"
 
-export function Layout(props: ParentProps) {
+function LayoutInner(props: ParentProps) {
+  const auth = useAuth()
+
   return (
     <SidebarProvider>
-      <AppSidebar />
+      <AppSidebar onLogout={() => { void auth.logout() }} user={auth.user()} />
       <SidebarInset>
         <header class="flex h-14 shrink-0 items-center gap-2 border-b px-4">
           <SidebarTrigger class="-ml-1" />
@@ -21,3 +24,10 @@ export function Layout(props: ParentProps) {
   )
 }
 
+export function Layout(props: ParentProps) {
+  return (
+    <AuthProvider>
+      <LayoutInner>{props.children}</LayoutInner>
+    </AuthProvider>
+  )
+}

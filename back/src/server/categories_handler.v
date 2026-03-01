@@ -13,6 +13,7 @@ struct CategoryInput {
 // GET /api/categories
 @['/api/categories'; get]
 pub fn (mut app App) list_categories(mut ctx Context) veb.Result {
+	app.get_auth_user(mut ctx) or { return ctx.unauthorized() }
 	rows := app.db.list_categories() or { return ctx.server_error(err.msg()) }
 	return ctx.json(rows)
 }
@@ -20,6 +21,7 @@ pub fn (mut app App) list_categories(mut ctx Context) veb.Result {
 // GET /api/categories/:id
 @['/api/categories/:id'; get]
 pub fn (mut app App) get_category(mut ctx Context, id int) veb.Result {
+	app.get_auth_user(mut ctx) or { return ctx.unauthorized() }
 	row := app.db.get_category(id) or { return ctx.not_found() }
 	return ctx.json(row)
 }
@@ -27,6 +29,7 @@ pub fn (mut app App) get_category(mut ctx Context, id int) veb.Result {
 // POST /api/categories
 @['/api/categories'; post]
 pub fn (mut app App) create_category(mut ctx Context) veb.Result {
+	app.get_auth_user(mut ctx) or { return ctx.unauthorized() }
 	input := json.decode(CategoryInput, ctx.req.data) or {
 		return ctx.request_error('invalid JSON body')
 	}
@@ -42,6 +45,7 @@ pub fn (mut app App) create_category(mut ctx Context) veb.Result {
 // PUT /api/categories/:id
 @['/api/categories/:id'; put]
 pub fn (mut app App) update_category(mut ctx Context, id int) veb.Result {
+	app.get_auth_user(mut ctx) or { return ctx.unauthorized() }
 	input := json.decode(CategoryInput, ctx.req.data) or {
 		return ctx.request_error('invalid JSON body')
 	}
@@ -57,6 +61,7 @@ pub fn (mut app App) update_category(mut ctx Context, id int) veb.Result {
 // DELETE /api/categories/:id
 @['/api/categories/:id'; delete]
 pub fn (mut app App) delete_category(mut ctx Context, id int) veb.Result {
+	app.get_auth_user(mut ctx) or { return ctx.unauthorized() }
 	app.db.delete_category(id) or { return ctx.not_found() }
 	return ctx.no_content()
 }
