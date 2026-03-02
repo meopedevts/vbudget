@@ -1,31 +1,27 @@
-COPY --from=backend /app/backend/bin/vbudget /app/vbudget
-COPY --from=frontend /app/frontend/dist ./src/embedded/
-COPY backend/ ./
-WORKDIR /app/frontend
-# Output: /app/front/dist
-COPY frontend/ ./
-COPY frontend/package.json front/pnpm-lock.yaml ./
 # ── Stage 1: Build the Solid+Vite frontend ───────────────────────────────────
-COPY frontend/package.json frontend/pnpm-lock.yaml ./
+FROM node:20-alpine AS frontend
 
 WORKDIR /app/frontend
-COPY frontend/ ./
-# Install pnpm
-# Output: /app/frontend/dist
 
-COPY frontend/package.json front/pnpm-lock.yaml ./
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Copy package files and install dependencies
+COPY frontend/package.json frontend/pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 
+# Copy frontend source and build
 COPY frontend/ ./
-WORKDIR /app/backend
-# Output: /app/front/dist
-COPY backend/ ./
+RUN pnpm run build
+
+# Output: /app/frontend/dist
 
 # ── Stage 2: Build the V backend (with frontend embedded) ────────────────────
-COPY --from=frontend /app/frontend/dist ./src/embedded/
+FROM thevlang/vlang:latest AS backend
 
 WORKDIR /app/backend
 
+# Copy backend source
 COPY backend/ ./
 
 # Copy the frontend bundle into the embedded directory before compiling
@@ -35,8 +31,9 @@ COPY --from=frontend /app/frontend/dist ./src/embedded/
 # so the binary runs natively on Alpine without any extra flags or packages.
 RUN v src/ -o bin/vbudget
 
+# Output: /app/backend/bin/vbudget
 
-COPY --from=backend /app/backend/bin/vbudget /app/vbudget
+# ── Stage 3: Final runtime image ──────────────────────────────────────────────
 FROM alpine:3
 
 # sqlite-libs: V's db.sqlite module links dynamically against libsqlite3
