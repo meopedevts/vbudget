@@ -1,26 +1,25 @@
 FRONT_DIR    := frontend
 BACK_DIR     := backend
-BACK_DIR     := back
 EMBEDDED_DIR := $(BACK_DIR)/src/embedded
 
-.PHONY: all front back run clean docker-build
+.PHONY: all frontend backend run clean docker-build
 
-all: front back
+all: frontend backend
 
 ## Build the Solid+Vite frontend and copy the bundle into the embedded directory
-front:
+frontend:
 	cd $(FRONT_DIR) && pnpm build
 	rm -rf $(EMBEDDED_DIR)/assets $(EMBEDDED_DIR)/index.html
 	cp -r $(FRONT_DIR)/dist/. $(EMBEDDED_DIR)/
 
 ## Compile the V backend (embeds the frontend bundle into the binary)
-back:
+backend:
 	cd $(BACK_DIR) && v src/ -o bin/vbudget
 
 ## Build everything and start the server
 run:
-	$(MAKE) front
-	$(MAKE) back
+	$(MAKE) frontend
+	$(MAKE) backend
 	$(BACK_DIR)/bin/vbudget
 
 ## Build the production Docker image

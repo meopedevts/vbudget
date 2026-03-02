@@ -70,7 +70,13 @@ pub fn (mut app App) register(mut ctx Context) veb.Result {
 	token := app.auth.add_token(user.id) or {
 		return ctx.server_error(err.msg())
 	}
-	ctx.set_cookie(name: 'token', value: token)
+	ctx.set_cookie(
+		name: 'token'
+		value: token
+		path: '/'
+		http_only: true
+		same_site: .same_site_lax_mode
+	)
 
 	return ctx.json(UserResponse{ id: user.id, name: user.name })
 }
@@ -97,7 +103,13 @@ pub fn (mut app App) login(mut ctx Context) veb.Result {
 	token := app.auth.add_token(user.id) or {
 		return ctx.server_error(err.msg())
 	}
-	ctx.set_cookie(name: 'token', value: token)
+	ctx.set_cookie(
+		name: 'token'
+		value: token
+		path: '/'
+		http_only: true
+		same_site: .same_site_lax_mode
+	)
 
 	return ctx.json(UserResponse{ id: user.id, name: user.name })
 }
@@ -115,7 +127,14 @@ pub fn (mut app App) logout(mut ctx Context) veb.Result {
 	}
 
 	// Clear the cookie by setting max_age to -1
-	ctx.set_cookie(name: 'token', value: '', max_age: -1)
+	ctx.set_cookie(
+		name: 'token'
+		value: ''
+		path: '/'
+		max_age: -1
+		http_only: true
+		same_site: .same_site_lax_mode
+	)
 
 	return ctx.no_content()
 }
@@ -129,4 +148,3 @@ pub fn (mut app App) me(mut ctx Context) veb.Result {
 	}
 	return ctx.json(UserResponse{ id: user.id, name: user.name })
 }
-
